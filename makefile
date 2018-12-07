@@ -7,4 +7,6 @@ build:
 	cp -r front-end/dist dist/front-end/
 	cp package.json dist/
 	rm -rf dist/front-end/node_modules
+	rm -rf front-end/node_modules
+	rm -rf node_modules
 	chmod +x dist/src/index.js
