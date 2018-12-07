@@ -5,3 +5,7 @@ html, body, :global(#root) {
   overflow: hidden;
 }
 
+
+img{
+  max-width: 100% !important;
+}

@@ -170,9 +170,11 @@ const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
       continue;
     }
 
-    let newLink = `otherBooks/${group}_${book}`;
+    let newLink = '';
+
+    const links = page.split('#');
     if (page) {
-      newLink += `/${page}.html`;
+      newLink += `#/${links[0]}.html#${_.get(links, '[1]')}`;
     }
 
     $(link).attr('href', newLink);
