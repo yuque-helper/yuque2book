@@ -1,0 +1,48 @@
+{
+  "name": "yuque2book",
+  "version": "0.0.10",
+  "description": "convert yuque book to a static book",
+  "main": "dist/front-end/src/index.js",
+  "scripts": {
+    "test": "npm run test",
+    "prepublish": "make build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cctv1005s/yuque2book.git"
+  },
+  "bin": {
+    "yuque2book": "./dist/src/index.js"
+  },
+  "keywords": [
+    "yuque",
+    "book",
+    "convert",
+    "html"
+  ],
+  "author": "cctv1005s",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cctv1005s/yuque2book/issues"
+  },
+  "homepage": "https://github.com/cctv1005s/yuque2book#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "co": "^4.6.0",
+    "commander": "^2.19.0",
+    "debug": "^4.1.0",
+    "fs-extra": "^7.0.1",
+    "lodash": "^4.17.11",
+    "yuque-api": "0.0.4"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.10",
+    "@types/commander": "^2.12.2",
+    "@types/debug": "^0.0.31",
+    "@types/fs-extra": "^5.0.4",
+    "@types/lodash": "^4.14.118",
+    "@types/node": "^10.12.12",
+    "tsc": "^1.0.0",
+    "typescript": "^3.2.2"
+  }
+}

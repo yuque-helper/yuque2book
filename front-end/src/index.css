@@ -1,0 +1,7 @@
+
+html, body, :global(#root) {
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+

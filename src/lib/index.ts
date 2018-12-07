@@ -1,0 +1,135 @@
+// import * as os from 'os';
+import Yuque from 'yuque-api';
+import * as fs from 'fs-extra';
+import * as path from 'path';
+
+import {parseUrl} from './util';
+import { YuqueInstance, Toc, Doc } from '../interface';
+import {localize} from './localize';
+
+const tempDir = process.cwd() || '.';
+
+const yuque2book = async (token: string, url: string, local:boolean = false) => {
+  const instance = parseUrl(url);
+  const yuque = new Yuque(token, {url: instance.origin });
+
+  if(!instance.namespace || !instance.name){
+    throw Error('没有选择文档仓库');
+  }
+
+  // 遍历目录树
+  const dir = path.join(tempDir, instance.name);
+  await fs.ensureDir(dir);
+
+  const dataDir = path.join(dir, 'data');
+
+  await getSaveDetail(yuque, instance, dataDir);
+  const toc = await getAndSaveToc(yuque, instance, dataDir);
+  await getAndSaveDoc(toc, yuque, instance, dataDir);
+
+  // 本地化图片, 资源
+  if(local){
+    await localize(dataDir, dataDir, token);
+    // TODO: 需要重构一下代码
+    try{
+      await fs.move(path.join(dataDir, 'img'), path.join(dir, 'img'));
+      await fs.move(path.join(dataDir, 'attach'), path.join(dir, 'attach'));
+    } catch(e){
+      console.log('移动文件失败', e);
+    }
+  }
+
+  await moveFrontEnd(dir);
+};
+
+
+const getSaveDetail = async (yuque: Yuque, instance: YuqueInstance, dir: string) => {
+  if(!instance.namespace || !instance.name){
+    throw Error('没有选择文档仓库');
+  }
+  
+  const detail = await yuque.repo(instance.namespace).detail();
+  
+  const bookJsonPath = path.join(dir, 'book.json');
+  await fs.ensureFile(bookJsonPath);
+
+  const {name, description, slug} = detail.data;
+
+  await fs.writeFile(bookJsonPath, JSON.stringify(
+    {
+      name, description, slug
+    }
+  ));
+}
+
+const getAndSaveToc = async (yuque: Yuque, instance: YuqueInstance, dir: string): Promise<Toc[]> => {
+
+  if(!instance.namespace || !instance.name){
+    throw Error('没有选择文档仓库');
+  }
+  
+  // 获取yuque的目录树, 存储成为toc.json
+  let result:any = null;
+  try{
+    result = await yuque.repo(instance.namespace).toc();
+  } catch(e){
+    // console.error(e);
+    throw Error('获取目录树失败');
+  }
+
+  if(!result){
+    throw Error('获取目录树失败');
+  }
+
+  const toc = result.data;
+
+  await fs.ensureDir(dir);
+
+  const tocFile = path.join(dir, 'toc.json');
+
+  await fs.ensureFile(tocFile);
+
+  await fs.writeFile(tocFile, JSON.stringify(toc, null, 2));
+
+  return toc;
+};
+
+
+const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, dir: string) => {
+  if(!instance.namespace || !instance.name){
+    throw Error('没有选择文档仓库');
+  }
+
+  for(let doc of toc){
+    if(doc.slug === '#'){
+      continue;
+    }
+
+    try{
+      const docBody: Doc = await yuque.repo(instance.namespace).doc(doc.slug);
+      const docPath = path.join(dir, doc.slug + '.json');
+      await fs.ensureFile(docPath);
+      await fs.writeFile(docPath, JSON.stringify(
+        {
+          title: docBody.data.title,
+          slug: docBody.data.id,
+          body_html: docBody.data.body_html
+        },
+        null,
+        2
+      ));
+      console.log('获取文档: %s 成功, slug: %s', doc.title, doc.slug);
+    } catch(e){
+      console.error('获取文档: %s 失败, slug: %s', doc.title, doc.slug);
+    }
+  }
+};
+
+const moveFrontEnd = async (dir: string) => {
+  const frontDist = path.join(__dirname, '..', '..', 'front-end', 'dist');
+  const target = path.join(dir);
+  await fs.copy(frontDist, target);
+}
+
+export default yuque2book;
+

@@ -1,0 +1,6 @@
+dist/*
+node_modules/*
+front-end/**/data/*
+.DS_Store
+front-end/dist/*
+front-end/node_modules/*

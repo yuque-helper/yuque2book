@@ -1,0 +1,38 @@
+.sider{
+  padding-left: calc(~"(100% - 1400px)/2");
+  width: calc(~"(100% - 1400px)/2 + 250px");
+  flex: 0 0 auto;
+  display: flex;
+  min-width: 250px;
+  background: #fafafa;
+  border-right: 1px solid #e8e8e8;
+  font-size: 14px;
+  position: relative;
+  padding-top: 32px;
+  height: calc(~"100vh - 60px");
+  overflow: auto;
+}
+
+.doc{
+  &.active{
+    .title{
+      color: #25b864;
+    }
+  }
+
+  color: #595959;
+  font-size: 12px;
+  line-height: 26px;
+  padding: 1px 0;
+  display: block;
+  
+  .trigger{
+    cursor: pointer;
+  }
+
+  .title{
+    cursor: pointer;
+    color: #595959;
+    text-decoration: none;
+  }
+}
