@@ -51,7 +51,7 @@ class Sider extends React.Component{
             return (
               <div 
                 key={t.slug + t.title + t.depth} 
-                style={{ paddingLeft: t.depth * 10 }}
+                style={{ paddingLeft: 10 }}
               >
                 <div 
                   className={classNames({
