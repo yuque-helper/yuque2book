@@ -1,6 +1,6 @@
 {
   "name": "yuque2book",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "convert yuque book to a static book",
   "main": "dist/front-end/src/index.js",
   "scripts": {
