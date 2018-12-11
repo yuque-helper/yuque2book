@@ -1,17 +1,16 @@
-import * as cheerio from 'cheerio';
-import * as request from 'superagent';
-import * as co from 'co';
-import * as path from 'path';
-import * as _ from 'lodash';
-import * as util  from 'util';
-import * as debug from 'debug';
-import {Writable} from 'stream';
-import * as fs from 'fs-extra';
+import * as cheerio from "cheerio";
+import * as co from "co";
+import * as debug from "debug";
+import * as fs from "fs-extra";
+import * as _ from "lodash";
+import * as path from "path";
+import {Writable} from "stream";
+import * as request from "superagent";
+import * as util from "util";
 
-const log = debug('yuque2book');
+const log = debug("yuque2book");
 
 // TODO: !! THE FILE TO BE TO REFACTOR AND TEST !!
-
 
 const reg = /.*\/(.*\.[a-zA-Z]+)$/;
 const yuqueUrlCheckReg = /^https:\/\/.*yuque\.[^.]+\.com/;
@@ -19,53 +18,53 @@ const yuqueUrlCheckReg = /^https:\/\/.*yuque\.[^.]+\.com/;
 const pipePromise = (reader: request.SuperAgentRequest, writer: Writable) => {
   return new Promise((res, rej) => {
     reader.pipe(writer);
-    reader.on('end', res);
-    reader.on('close', res);
-    reader.on('err', rej);
+    reader.on("end", res);
+    reader.on("close", res);
+    reader.on("err", rej);
   });
 };
 
 export const localize = (dir: string, folder: string, token: string) => {
   const readDir = util.promisify(fs.readdir);
 
-  return co(function* () {
+  return co(function*() {
     const base = path.join(folder);
 
     // make images dir
-    yield fs.ensureDir(path.join(base, 'img'));
-    yield fs.ensureDir(path.join(base, 'attach'));
+    yield fs.ensureDir(path.join(base, "img"));
+    yield fs.ensureDir(path.join(base, "attach"));
 
     let list = yield readDir(base);
-    list = list.filter((name: string) => name.endsWith('.json'));
+    list = list.filter((name: string) => name.endsWith(".json"));
 
-    for (let h of list) {
+    for (const h of list) {
       // TODO: 将阻塞api移除
       const json = JSON.parse(fs.readFileSync(path.join(base, h)).toString());
       const html = json.body_html;
-      if(!html){
+      if (!html) {
         continue;
       }
 
       const $ = cheerio.load(html);
       // 保存图片
-      yield saveFiles($, 'img', 'src', base, 'img', undefined, null, token);
+      yield saveFiles($, "img", "src", base, "img", undefined, null, token);
       // 保存附件, 并且只保存上传到语雀上的附件
-      yield saveFiles($, 'a', 'href', base, 'attach', yuqueUrlCheckReg, (src: string) => {
-        return src.replace('/attachments/', '/api/v2/attachments/');
+      yield saveFiles($, "a", "href", base, "attach", yuqueUrlCheckReg, (src: string) => {
+        return src.replace("/attachments/", "/api/v2/attachments/");
       }, token);
 
       toLocalUrl($, yuqueUrlCheckReg);
 
-      const _html = $('html').html();
-      fs.writeFileSync(path.join(base, h), 
+      const _html = $("html").html();
+      fs.writeFileSync(path.join(base, h),
         JSON.stringify(
           {
             ...json,
-            body_html: `<div>${_html}</div>`
+            body_html: `<div>${_html}</div>`,
           },
           null,
-          2
-        )
+          2,
+        ),
       );
     }
     return folder;
@@ -84,14 +83,14 @@ export const localize = (dir: string, folder: string, token: string) => {
  * @return {Promise}
  */
 const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string, folder: string, filter: RegExp | null = null, replace: any, token: string) => {
-  return co(function* () {
-    let $files: CheerioElement[] = [];
+  return co(function*() {
+    const $files: CheerioElement[] = [];
 
     $(tagName).each((index, item) => {
       $files.push(item);
     });
 
-    for (let item of $files) {
+    for (const item of $files) {
       const src = $(item).attr(attr);
       if (!src) {
         continue;
@@ -103,37 +102,37 @@ const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string
         }
       }
 
-      let filename = _.get(src.match(reg), '[1]');
+      let filename = _.get(src.match(reg), "[1]");
 
       if (!filename) {
-        log(attr, ' can not be match', src);
+        log(attr, " can not be match", src);
         continue;
       }
 
-      filename = filename.replace('/', '-');
+      filename = filename.replace("/", "-");
       filename = decodeURIComponent(filename);
       const fileSaveDir = path.join(base, folder);
       if (!fs.existsSync(fileSaveDir)) {
         fs.mkdirpSync(fileSaveDir);
       }
       let targetUrl = src;
-      if (replace && typeof replace === 'function') {
+      if (replace && typeof replace === "function") {
         targetUrl = replace(src);
       }
 
-      log('download start', targetUrl);
+      log("download start", targetUrl);
       yield pipePromise(
         request
           (targetUrl)
-          .set('X-Auth-Token', token)
-          .set('User-Agent', 'gitlab-build-robot')
+          .set("X-Auth-Token", token)
+          .set("User-Agent", "gitlab-build-robot")
         ,
-        fs.createWriteStream(path.join(fileSaveDir, filename))
+        fs.createWriteStream(path.join(fileSaveDir, filename)),
       );
 
-      log('create file', path.join(fileSaveDir, filename));
+      log("create file", path.join(fileSaveDir, filename));
 
-      log('download finish', src);
+      log("download finish", src);
       $(item).attr(attr, `${folder}/${filename}`);
     }
   });
@@ -148,12 +147,12 @@ const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string
  */
 const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
   const $links: CheerioElement[] = [];
-  $('a').each((index, item) => {
+  $("a").each((index, item) => {
     $links.push(item);
   });
 
-  for (let link of $links) {
-    const src = $(link).attr('href');
+  for (const link of $links) {
+    const src = $(link).attr("href");
     if (!src) {
       continue;
     }
@@ -164,19 +163,19 @@ const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
     }
 
     // ["https:", "", "yuque.antfin-inc.com", "dtboost", "qd6g6q", "evcrbc"]
-    const [protocol, white, host, group, book, page] = src.split('/');
-    log('url parser', protocol, white, host, group, book, page);
+    const [protocol, white, host, group, book, page] = src.split("/");
+    log("url parser", protocol, white, host, group, book, page);
     if (!group) {
       continue;
     }
 
-    let newLink = '';
+    let newLink = "";
 
-    const links = page.split('#');
+    const links = page.split("#");
     if (page) {
-      newLink += `#/${links[0]}.html#${_.get(links, '[1]')}`;
+      newLink += `#/${links[0]}.html#${_.get(links, "[1]")}`;
     }
 
-    $(link).attr('href', newLink);
+    $(link).attr("href", newLink);
   }
 };

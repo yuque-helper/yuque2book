@@ -1,8 +1,8 @@
 {
   "name": "yuque2book",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "convert yuque book to a static book",
-  "main": "dist/front-end/src/index.js",
+  "main": "dist/src/lib/index.js",
   "scripts": {
     "test": "npm run test",
     "prepublish": "make build"
@@ -33,6 +33,7 @@
     "debug": "^4.1.0",
     "fs-extra": "^7.0.1",
     "lodash": "^4.17.11",
+    "superagent": "^4.0.0",
     "yuque-api": "0.0.4"
   },
   "devDependencies": {
@@ -43,6 +44,7 @@
     "@types/lodash": "^4.14.118",
     "@types/node": "^10.12.12",
     "tsc": "^1.0.0",
+    "tslint": "^5.11.0",
     "typescript": "^3.2.2"
   }
 }
