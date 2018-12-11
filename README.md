@@ -1,4 +1,5 @@
 # yuque2book
+English  |  [中文](https://github.com/yuque-helper/yuque2book/wiki/%E8%AF%AD%E9%9B%80%E6%96%87%E6%A1%A3%E5%B7%A5%E5%85%B7)
 
 convert yuque repo to a book
 
@@ -20,3 +21,12 @@ Options:
   -l, --local      to localize image and attach
   -h, --help       output usage information
 ```
+
+## demo
+
+![](https://raw.githubusercontent.com/yuque-helper/yuque2book/master/doc/yuque2book.gif)
+
+
+## preview
+
+![](https://raw.githubusercontent.com/yuque-helper/yuque2book/master/doc/preview.png)
