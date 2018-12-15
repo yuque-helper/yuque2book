@@ -1,6 +1,6 @@
 {
   "name": "yuque2book",
-  "version": "0.0.13-patch2",
+  "version": "0.0.13-patch3",
   "description": "convert yuque book to a static book",
   "main": "dist/src/lib/index.js",
   "scripts": {
