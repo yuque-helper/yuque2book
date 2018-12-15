@@ -133,7 +133,7 @@ const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string
       log("create file", path.join(fileSaveDir, filename));
 
       log("download finish", src);
-      $(item).attr(attr, `${folder}/${filename}`);
+      $(item).attr(attr, `data/${folder}/${filename}`);
     }
   });
 };
