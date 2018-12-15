@@ -1,4 +1,4 @@
-FRONT_VERSION=v0.1.0
+FRONT_VERSION=v0.2.0
 FRONT_PKG_NAME=book-front-end_${FRONT_VERSION}.zip
 FRONT_URL=https://github.com/yuque-helper/book-front-end/releases/download/${FRONT_VERSION}/${FRONT_PKG_NAME}
 
@@ -17,5 +17,8 @@ install:
 	fi
 
 dev:
+	if [ -d front-end ]; then \
+		rm -rf front-end;\
+	fi
 	mkdir front-end
 	cd front-end && wget ${FRONT_URL} && unzip ${FRONT_PKG_NAME} && rm -rf ${FRONT_PKG_NAME}
