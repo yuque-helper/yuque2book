@@ -1,4 +1,4 @@
-FRONT_VERSION=v0.3.0
+FRONT_VERSION=v0.3.1
 FRONT_PKG_NAME=book-front-end_${FRONT_VERSION}.zip
 FRONT_URL=https://github.com/yuque-helper/book-front-end/releases/download/${FRONT_VERSION}/${FRONT_PKG_NAME}
 
