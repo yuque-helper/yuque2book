@@ -173,7 +173,7 @@ const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
 
     const links = page.split("#");
     if (page) {
-      newLink += `#/${links[0]}.html#${_.get(links, "[1]")}`;
+      newLink += `#/${links[0]}.html?anchor=${_.get(links, "[1]", '')}`;
     }
 
     $(link).attr("href", newLink);
