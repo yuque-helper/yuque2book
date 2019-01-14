@@ -162,7 +162,7 @@ const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
       }
     }
 
-    // ["https:", "", "yuque.antfin-inc.com", "dtboost", "qd6g6q", "evcrbc"]
+    // ["https:", "", "yuque.com", "dtboost", "qd6g6q", "evcrbc"]
     const [protocol, white, host, group, book, page] = src.split("/");
     log("url parser", protocol, white, host, group, book, page);
     if (!group) {
