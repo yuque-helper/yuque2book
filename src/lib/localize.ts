@@ -110,7 +110,7 @@ const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string
       }
 
       filename = filename.replace("/", "-");
-      filename = decodeURIComponent(filename);
+      filename = path.basename(decodeURIComponent(filename));
       const fileSaveDir = path.join(base, folder);
       if (!fs.existsSync(fileSaveDir)) {
         fs.mkdirpSync(fileSaveDir);
