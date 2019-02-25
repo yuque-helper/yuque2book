@@ -171,8 +171,8 @@ const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
 
     let newLink = "";
 
-    const links = page.split("#");
     if (page) {
+      const links = page.split("#");
       newLink += `#/${links[0]}.html?anchor=${_.get(links, "[1]", '')}`;
     }
 
