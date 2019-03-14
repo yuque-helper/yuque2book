@@ -108,6 +108,7 @@ const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, 
       const docBody: Doc = await yuque.repo(instance.namespace).doc(doc.slug);
       const docPath = path.join(dir, doc.slug + ".json");
       await fs.ensureFile(docPath);
+
       await fs.writeFile(docPath, JSON.stringify(
         {
           body_html: docBody.data.body_html,
