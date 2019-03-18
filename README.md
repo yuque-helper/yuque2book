@@ -34,7 +34,7 @@ Options:
 
 ## preview
 
-![](https://raw.githubusercontent.com/yuque-helper/yuque2book/master/doc/preview.png)
+![image](https://user-images.githubusercontent.com/16508727/54540564-23db1c00-49d3-11e9-87d2-b35e230a6151.png)
 
 ## Q&A
 
