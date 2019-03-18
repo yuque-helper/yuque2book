@@ -7,6 +7,7 @@ import * as path from "path";
 import {Writable} from "stream";
 import * as request from "superagent";
 import * as util from "util";
+import {parse} from 'url';
 
 const log = debug("yuque2book");
 
@@ -18,9 +19,9 @@ const yuqueUrlCheckReg = /^https:\/\/.*yuque\.[^.]+\.com/;
 const pipePromise = (reader: request.SuperAgentRequest, writer: Writable) => {
   return new Promise((res, rej) => {
     reader.pipe(writer);
-    reader.on("end", res);
-    reader.on("close", res);
-    reader.on("err", rej);
+    writer.on("end", res);
+    writer.on("close", res);
+    writer.on("err", rej);
   });
 };
 
@@ -102,7 +103,13 @@ const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string
         }
       }
 
-      let filename = _.get(src.match(reg), "[1]");
+      const pathname = parse(src).pathname;
+      if(!pathname) {
+        log(attr, "pathname can not be match", pathname);
+        continue;
+      }
+
+      let filename = _.get(pathname.match(reg), "[1]");
 
       if (!filename) {
         log(attr, " can not be match", src);
@@ -121,6 +128,7 @@ const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string
       }
 
       log("download start", targetUrl);
+
       yield pipePromise(
         request
           (targetUrl)
