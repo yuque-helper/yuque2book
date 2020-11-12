@@ -186,4 +186,9 @@ const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
 
     $(link).attr("href", newLink);
   }
+
+  // 订正链接卡片不跳转的问题
+  $("div[data-lake-card=\"yuque\"]").each((index, item) => {
+    $(item).find('a').attr('target', '_blank');
+  });
 };
