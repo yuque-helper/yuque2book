@@ -164,6 +164,10 @@ const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
     if (!src) {
       continue;
     }
+    // 若是mp4则跳过
+    if(/^https:\/\/.*yuque\.[^.]+\.com\/.*\.mp4$/.test(src)) {
+      continue;
+    }
     if (_.isRegExp(filter)) {
       if (!filter.test(src)) {
         continue;
