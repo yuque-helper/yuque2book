@@ -6,7 +6,7 @@ build: install
 	rm -rf dist
 	./node_modules/.bin/tsc
 	mkdir dist/front-end
-	cd dist/front-end && wget ${FRONT_URL} && unzip ${FRONT_PKG_NAME} && rm -rf ${FRONT_PKG_NAME}
+	cd dist/front-end && wget --no-check-certificate ${FRONT_URL} && unzip ${FRONT_PKG_NAME} && rm -rf ${FRONT_PKG_NAME}
 	cp package.json dist/
 	rm -rf dist/front-end/.DS_Store
 	chmod +x dist/src/index.js
@@ -21,4 +21,4 @@ dev:
 		rm -rf front-end;\
 	fi
 	mkdir front-end
-	cd front-end && wget ${FRONT_URL} && unzip ${FRONT_PKG_NAME} && rm -rf ${FRONT_PKG_NAME}
+	cd front-end && wget --no-check-certificate ${FRONT_URL} && unzip ${FRONT_PKG_NAME} && rm -rf ${FRONT_PKG_NAME}
