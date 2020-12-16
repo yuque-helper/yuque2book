@@ -2,10 +2,11 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import Yuque from "yuque-api";
+import cheerio from "cheerio";
 
 import { Doc, Toc, YuqueInstance } from "../interface";
 import {localize} from "./localize";
-import {parseUrl} from "./util";
+import {parseUrl, segmentResult} from "./util";
 
 const tempDir = process.cwd() || ".";
 
@@ -22,10 +23,11 @@ const yuque2book = async (token: string, url: string, local: boolean = false) =>
   await fs.ensureDir(dir);
 
   const dataDir = path.join(dir, "json");
+  const searchDir = path.join(dir, "search");
 
   await getSaveDetail(yuque, instance, dataDir);
   const toc = await getAndSaveToc(yuque, instance, dataDir);
-  await getAndSaveDoc(toc, yuque, instance, dataDir);
+  await getAndSaveDoc(toc, yuque, instance, dataDir, searchDir);
 
   // 本地化图片, 资源
   if (local) {
@@ -92,12 +94,15 @@ const getAndSaveToc = async (yuque: Yuque, instance: YuqueInstance, dir: string)
   await fs.writeFile(tocFile, JSON.stringify(toc, null, 2));
 
   return toc;
-};
+}; 
 
-const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, dir: string) => {
+const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, dir: string, searchDir: string) => {
   if (!instance.namespace || !instance.name) {
     throw Error("没有选择文档仓库");
   }
+
+  const searchJson = {}
+  const searchTitleJson = {}
 
   for (const doc of toc) {
     if (doc.slug === "#") {
@@ -118,20 +123,49 @@ const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, 
         null,
         2,
       ));
+
+      let $ = cheerio.load(docBody.data.body_html);
+
+      segmentResult($('html').text(), docBody.data.slug, searchJson)
+
+      segmentResult(docBody.data.title, docBody.data.slug, searchTitleJson)
+
+
        // tslint:disable-next-line
       console.log("获取文档: %s 成功, slug: %s", doc.title, doc.slug);
     } catch (e) {
        // tslint:disable-next-line
       console.error("获取文档: %s 失败, slug: %s", doc.title, doc.slug);
     }
+
+
   }
+
+  const docPath = path.join(searchDir, "search.json");
+  await fs.ensureFile(docPath);
+
+  await fs.writeFile(docPath, JSON.stringify(
+    searchJson,
+    null,
+    2,
+  ));
+
+  const docPathtitle = path.join(searchDir, "search-title.json");
+  await fs.ensureFile(docPathtitle);
+
+  await fs.writeFile(docPathtitle, JSON.stringify(
+    searchTitleJson,
+    null,
+    2,
+  ));
+
 };
 
 const moveFrontEnd = async (dir: string) => {
   const frontDist = path.join(__dirname, "..", "..", "front-end");
   const target = dir;
   await fs.copy(frontDist, target);
-  const toMoveDir = ['json', 'img', 'attach'];
+  const toMoveDir = ['json', 'search', 'img', 'attach'];
   await fs.ensureDir(path.join(dir, 'data'));
   for(let md of toMoveDir){
     if(fs.existsSync(path.join(dir, md))){
