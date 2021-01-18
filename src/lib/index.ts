@@ -2,13 +2,35 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import Yuque from "yuque-api";
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
+import * as _ from 'lodash';
 
 import { Doc, Toc, YuqueInstance } from "../interface";
 import {localize} from "./localize";
-import {parseUrl, segmentResult} from "./util";
+import {parseUrl} from "./util";
+var Segment = require('novel-segment');
+// 创建实例
+var segment = new Segment();
+// 使用默认的识别模块及字典，载入字典文件需要1秒，仅初始化时执行一次即可
+segment.useDefault();
 
 const tempDir = process.cwd() || ".";
+
+const segmentResult = (text, slug, searchJson) => {  
+  let arr = segment.doSegment(text, {
+    simple: true
+  });
+
+  for (let i = 0; i < arr.length; i++) {
+    if (searchJson[arr[i]] && searchJson[arr[i]].length) {
+      searchJson[arr[i]].push(slug)
+      searchJson[arr[i]] = _.uniq(searchJson[arr[i]]);
+    } else {
+      searchJson[arr[i]] = [slug]
+    }
+  }
+}
+
 
 const yuque2book = async (token: string, url: string, local: boolean = false) => {
   const instance = parseUrl(url);
@@ -96,14 +118,14 @@ const getAndSaveToc = async (yuque: Yuque, instance: YuqueInstance, dir: string)
   return toc;
 }; 
 
+const searchJson = {}
+const searchTitleJson = {}
+
+
 const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, dir: string, searchDir: string) => {
   if (!instance.namespace || !instance.name) {
     throw Error("没有选择文档仓库");
   }
-
-  const searchJson = {}
-  const searchTitleJson = {}
-
   for (const doc of toc) {
     if (doc.slug === "#") {
       continue;
@@ -124,16 +146,20 @@ const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, 
         2,
       ));
 
+
       let $ = cheerio.load(docBody.data.body_html);
 
-      segmentResult($('html').text(), docBody.data.slug, searchJson)
 
-      segmentResult(docBody.data.title, docBody.data.slug, searchTitleJson)
+      segmentResult($('html').text(), docBody.data.id, searchJson)
+
+      segmentResult(docBody.data.title, docBody.data.id, searchTitleJson)
 
 
        // tslint:disable-next-line
       console.log("获取文档: %s 成功, slug: %s", doc.title, doc.slug);
     } catch (e) {
+      console.info('$==', e)
+
        // tslint:disable-next-line
       console.error("获取文档: %s 失败, slug: %s", doc.title, doc.slug);
     }

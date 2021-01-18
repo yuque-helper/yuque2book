@@ -32,9 +32,11 @@
     "commander": "^2.19.0",
     "debug": "^4.1.0",
     "fs-extra": "^7.0.1",
+    "install": "^0.13.0",
     "lodash": "^4.17.11",
+    "novel-segment": "^2.7.56",
+    "npm": "^6.14.11",
     "superagent": "^4.0.0",
-    "nodejieba": "^2.5.1",
     "yuque-api": "0.0.4"
   },
   "devDependencies": {
