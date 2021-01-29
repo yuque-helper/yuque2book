@@ -1,9 +1,10 @@
 // import * as os from 'os';
-import * as fs from "fs-extra";
 import * as path from "path";
+import * as fs from "fs-extra";
 import Yuque from "yuque-api";
 import * as cheerio from "cheerio";
 import * as _ from 'lodash';
+
 
 import { Doc, Toc, YuqueInstance } from "../interface";
 import {localize} from "./localize";
