@@ -1,7 +1,6 @@
 import * as Url from "url";
 
 import {YuqueInstance} from "../interface";
-// import { reduceRight } from "lodash";
 export const parseUrl = (url: string): YuqueInstance => {
   const result = Url.parse(url);
   const origin = `${result.protocol}//${result.host}`;
