@@ -160,7 +160,6 @@ const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, 
        // tslint:disable-next-line
       console.log("获取文档: %s 成功, slug: %s", doc.title, doc.slug);
     } catch (e) {
-      console.info('$==', e)
 
        // tslint:disable-next-line
       console.error("获取文档: %s 失败, slug: %s", doc.title, doc.slug);
