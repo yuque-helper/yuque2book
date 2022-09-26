@@ -1,6 +1,5 @@
 import * as Url from "url";
 import * as _ from 'lodash';
-import * as Jieba from 'nodejieba';
 import {YuqueInstance} from "../interface";
 export const parseUrl = (url: string): YuqueInstance => {
   const result = Url.parse(url);
@@ -22,15 +21,3 @@ export const parseUrl = (url: string): YuqueInstance => {
     namespace: group + "/" + repo,
   };
 };
-
-export const segmentResult = (text, slug, searchJson) => {
-  var arr = Jieba.cut(text);
-  for (let i = 0; i < arr.length; i++) {
-    if (searchJson[arr[i]] && searchJson[arr[i]].length) {
-      searchJson[arr[i]].push(slug)
-      searchJson[arr[i]] = _.uniq(searchJson[arr[i]]);
-    } else {
-      searchJson[arr[i]] = [slug]
-    }
-  }
-}
