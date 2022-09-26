@@ -2,11 +2,10 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 import Yuque from "yuque-api";
-import * as cheerio from "cheerio";
 
 import { Doc, Toc, YuqueInstance } from "../interface";
 import {localize} from "./localize";
-import {parseUrl, segmentResult} from "./util";
+import {parseUrl} from "./util";
 
 const tempDir = process.cwd() || ".";
 
@@ -101,9 +100,6 @@ const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, 
     throw Error("没有选择文档仓库");
   }
 
-  const searchJson = {}
-  const searchTitleJson = {}
-
   for (const doc of toc) {
     if (doc.slug === "#") {
       continue;
@@ -123,42 +119,13 @@ const getAndSaveDoc = async (toc: Toc[], yuque: Yuque, instance: YuqueInstance, 
         null,
         2,
       ));
-
-      let $ = cheerio.load(docBody.data.body_html);
-
-      segmentResult($('html').text(), docBody.data.slug, searchJson)
-
-      segmentResult(docBody.data.title, docBody.data.slug, searchTitleJson)
-
-
        // tslint:disable-next-line
       console.log("获取文档: %s 成功, slug: %s", doc.title, doc.slug);
     } catch (e) {
        // tslint:disable-next-line
       console.error("获取文档: %s 失败, slug: %s", doc.title, doc.slug);
     }
-
-
   }
-
-  const docPath = path.join(searchDir, "search.json");
-  await fs.ensureFile(docPath);
-
-  await fs.writeFile(docPath, JSON.stringify(
-    searchJson,
-    null,
-    2,
-  ));
-
-  const docPathtitle = path.join(searchDir, "search-title.json");
-  await fs.ensureFile(docPathtitle);
-
-  await fs.writeFile(docPathtitle, JSON.stringify(
-    searchTitleJson,
-    null,
-    2,
-  ));
-
 };
 
 const moveFrontEnd = async (dir: string) => {

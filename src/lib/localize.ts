@@ -6,15 +6,14 @@ import * as _ from "lodash";
 import * as path from "path";
 import {Writable} from "stream";
 import * as request from "superagent";
-import * as util from "util";
 import {parse} from 'url';
 
 const log = debug("yuque2book");
 
 // TODO: !! THE FILE TO BE TO REFACTOR AND TEST !!
 
-const reg = /.*\/(.*\.[a-zA-Z]+)$/;
-const yuqueUrlCheckReg = /^https:\/\/.*yuque\.[^.]+\.com/;
+const reg = /.+\/(.+\.[a-zA-Z0-9]+).*$/;
+const yuqueUrlCheckReg = /^https:\/\/.*yuque\.com/;
 
 const pipePromise = (reader: request.SuperAgentRequest, writer: Writable) => {
   return new Promise((res, rej) => {
@@ -25,51 +24,48 @@ const pipePromise = (reader: request.SuperAgentRequest, writer: Writable) => {
   });
 };
 
-export const localize = (dir: string, folder: string, token: string) => {
-  const readDir = util.promisify(fs.readdir);
+export const localize = async (dir: string, folder: string, token: string) => {
 
-  return co(function*() {
-    const base = path.join(folder);
+  const base = path.join(folder);
 
-    // make images dir
-    yield fs.ensureDir(path.join(base, "img"));
-    yield fs.ensureDir(path.join(base, "attach"));
+  // make images dir
+  await fs.ensureDir(path.join(base, "img"));
+  await fs.ensureDir(path.join(base, "attach"));
 
-    let list = yield readDir(base);
-    list = list.filter((name: string) => name.endsWith(".json"));
+  let list = await fs.readdir(base);
+  list = list.filter((name: string) => name.endsWith(".json"));
 
-    for (const h of list) {
-      // TODO: 将阻塞api移除
-      const json = JSON.parse(fs.readFileSync(path.join(base, h)).toString());
-      const html = json.body_html;
-      if (!html) {
-        continue;
-      }
-
-      const $ = cheerio.load(html);
-      // 保存图片
-      yield saveFiles($, "img", "src", base, "img", undefined, null, token);
-      // 保存附件, 并且只保存上传到语雀上的附件
-      yield saveFiles($, "a", "href", base, "attach", yuqueUrlCheckReg, (src: string) => {
-        return src.replace("/attachments/", "/api/v2/attachments/");
-      }, token);
-
-      toLocalUrl($, yuqueUrlCheckReg);
-
-      const _html = $("html").html();
-      fs.writeFileSync(path.join(base, h),
-        JSON.stringify(
-          {
-            ...json,
-            body_html: `<div>${_html}</div>`,
-          },
-          null,
-          2,
-        ),
-      );
+  for (const h of list) {
+    // TODO: 将阻塞api移除
+    const json = JSON.parse(fs.readFileSync(path.join(base, h)).toString());
+    const html = json.body_html;
+    if (!html) {
+      continue;
     }
-    return folder;
-  });
+
+    const $ = cheerio.load(html);
+    // 保存图片
+    await saveFiles($, "img", "src", base, "img", undefined, null, token);
+    // 保存附件, 并且只保存上传到语雀上的附件
+    await saveFiles($, "a", "href", base, "attach", yuqueUrlCheckReg, (src: string) => {
+      return src.replace("/attachments/", "/api/v2/attachments/");
+    }, token);
+
+    toLocalUrl($, yuqueUrlCheckReg);
+
+    const _html = $("html").html();
+    fs.writeFileSync(path.join(base, h),
+        JSON.stringify(
+            {
+              ...json,
+              body_html: `<div>${_html}</div>`,
+            },
+            null,
+            2,
+        ),
+    );
+  }
+  return folder;
 };
 
 /**
@@ -83,13 +79,17 @@ export const localize = (dir: string, folder: string, token: string) => {
  * @param {function} replace src重命名
  * @return {Promise}
  */
-const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string, folder: string, filter: RegExp | null = null, replace: any, token: string) => {
+const saveFiles = ($: cheerio.Root, tagName: string, attr: string, base: string, folder: string, filter: RegExp | null = null, replace: any, token: string) => {
   return co(function*() {
-    const $files: CheerioElement[] = [];
+    const $files: cheerio.Element[] = [];
 
     $(tagName).each((index, item) => {
       $files.push(item);
     });
+
+    if(!$files.length) {
+      return;
+    }
 
     for (const item of $files) {
       const src = $(item).attr(attr);
@@ -110,6 +110,7 @@ const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string
       }
 
       let filename = _.get(pathname.match(reg), "[1]");
+
 
       if (!filename) {
         log(attr, " can not be match", src);
@@ -151,10 +152,11 @@ const saveFiles = ($: CheerioStatic, tagName: string, attr: string, base: string
  * 所有的yuque的url，都会变成 otherBooks/${group}_${book}这样的形式
  * 所以你的yuque文档如果外链了别的文档, 那么你就必须将另外一本book下载之后存放在这本book下
  * TODO: 如果两本book嵌套链接怎么办?
- * @param {jQuery} $
+ * @param $
+ * @param filter
  */
-const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
-  const $links: CheerioElement[] = [];
+const toLocalUrl = ($: cheerio.Root, filter: RegExp) => {
+  const $links: cheerio.Element[] = [];
   $("a").each((index, item) => {
     $links.push(item);
   });
@@ -164,10 +166,12 @@ const toLocalUrl = ($: CheerioStatic, filter: RegExp) => {
     if (!src) {
       continue;
     }
+
     // 若是mp4则跳过
     if(/^https:\/\/.*yuque\.[^.]+\.com\/.*\.mp4$/.test(src)) {
       continue;
     }
+
     if (_.isRegExp(filter)) {
       if (!filter.test(src)) {
         continue;
